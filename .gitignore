@@ -1,0 +1,14 @@
+# Environnement virtuel Python
+venv/
+
+# Données brutes (trop lourdes pour Git)
+*.csv.gz
+data_nettoyee.csv
+
+# Fichiers générés
+rapport_qualite.txt
+__pycache__/
+*.pyc
+
+# Fichiers système Mac
+.DS_Store

@@ -1,0 +1,136 @@
+version: "3.9"
+
+# =============================================================================
+# docker-compose.yml
+# =============================================================================
+# Projet : Réchauffement Climatique en France — Météo France x Metabase
+# Module : 4DVST - Data Visualization
+#
+# Ce fichier orchestre 3 services :
+#   1. postgres   : Base de données PostgreSQL (données climatologiques)
+#   2. metabase   : Outil de visualisation (dashboards interactifs)
+#   3. pgadmin    : Interface d'administration PostgreSQL (optionnel)
+#
+# Utilisation :
+#   Démarrer      : docker-compose up -d
+#   Arrêter       : docker-compose down
+#   Logs          : docker-compose logs -f
+#   Réinitialiser : docker-compose down -v  (supprime aussi les données)
+# =============================================================================
+
+services:
+
+  # ===========================================================================
+  # SERVICE 1 : PostgreSQL
+  # Base de données qui stocke les 3.6M lignes de données Météo France
+  # ===========================================================================
+  postgres:
+    image: postgres:15
+    container_name: postgres_meteo
+    restart: unless-stopped       # Redémarre automatiquement sauf si arrêté manuellement
+
+    environment:
+      POSTGRES_DB: meteo           # Nom de la base de données
+      POSTGRES_USER: meteo_admin   # Utilisateur PostgreSQL
+      POSTGRES_PASSWORD: meteo_admin
+
+    ports:
+      - "5433:5432"          # Expose le port 5432 du conteneur sur le port 5433 de l'hôte
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data   # Persistance des données entre redémarrages
+      - ./init:/docker-entrypoint-initdb.d       # Scripts SQL exécutés au premier démarrage
+
+    healthcheck:
+      # Vérifie que PostgreSQL est prêt à accepter des connexions
+      # Metabase attendra ce healthcheck avant de démarrer (depends_on)
+      test: ["CMD-SHELL", "pg_isready -U meteo_admin -d meteo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    networks:
+      - meteo_network
+
+  # ===========================================================================
+  # SERVICE 2 : Metabase
+  # Interface de visualisation — accessible sur http://localhost:3000
+  # ===========================================================================
+  metabase:
+    image: metabase/metabase:latest
+    container_name: metabase
+    restart: unless-stopped
+
+    ports:
+      - "3000:3000"                # Interface web Metabase
+
+    environment:
+      # --- Base de données Metabase (métadonnées internes de Metabase) ---
+      # Metabase stocke ses propres données (dashboards, questions, users)
+      # dans une base PostgreSQL dédiée plutôt qu'en H2 (défaut, non recommandé en prod)
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: metabase_app   # Base séparée des données météo
+      MB_DB_PORT: 5432
+      MB_DB_USER: meteo_admin
+      MB_DB_PASS: meteo_admin
+      MB_DB_HOST: postgres         # Nom du service Docker (pas localhost !)
+
+      # --- Paramètres optionnels ---
+      MB_SITE_LOCALE: fr            # Interface en français
+      JAVA_TIMEZONE: Europe/Paris   # Fuseau horaire pour les dates
+
+    depends_on:
+      postgres:
+        condition: service_healthy  # Attend que PostgreSQL soit prêt
+
+    volumes:
+      - metabase_data:/metabase-data  # Persistance des plugins Metabase
+
+    networks:
+      - meteo_network
+
+  # ===========================================================================
+  # SERVICE 3 : pgAdmin (optionnel mais pratique pour déboguer)
+  # Interface graphique pour inspecter PostgreSQL
+  # Accessible sur http://localhost:5050
+  # Login : admin@meteo.fr / admin
+  # ===========================================================================
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin_meteo
+    restart: unless-stopped
+
+    ports:
+      - "5050:80"
+
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@meteo.fr
+      PGADMIN_DEFAULT_PASSWORD: admin
+
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+
+    depends_on:
+      - postgres
+
+    networks:
+      - meteo_network
+
+# =============================================================================
+# VOLUMES
+# Persistance des données entre redémarrages des conteneurs
+# Les données survivent à un "docker-compose down" mais pas à "docker-compose down -v"
+# =============================================================================
+volumes:
+  postgres_data:    # Données PostgreSQL (table observations_meteo)
+  metabase_data:    # Plugins et configuration Metabase
+  pgadmin_data:     # Configuration pgAdmin
+
+# =============================================================================
+# RÉSEAU
+# Réseau interne Docker pour la communication entre les services
+# Les services se parlent par leur nom (ex: "postgres", "metabase")
+# =============================================================================
+networks:
+  meteo_network:
+    driver: bridge
