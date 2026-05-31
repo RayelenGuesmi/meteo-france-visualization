@@ -81,7 +81,7 @@ meteo.data.gouv.fr
                 │
                 ▼
         Metabase Dashboard
-        (4 tabs, 13 visualizations, interactive Year filter)
+        (4 tabs, 15 visualizations, interactive Year filter)
 ```
 
 ---
@@ -255,6 +255,8 @@ All visualizations apply an **altitude < 500m filter** to exclude high-altitude 
 - Summer Heat Map (pin map, months 6–8)
 - Average Temperature by City (bar chart, top 20)
 - Temperature Evolution by City (multi-series line chart)
+- Temperature Map by Department (choropleth map) — uses GeoJSON
+- Temperature Map by Region (choropleth map) — uses GeoJSON
 
 **Tab 3 — Extreme Events**
 - Frost Days per Year (line chart) — uses `duree_gel`
@@ -271,6 +273,19 @@ All visualizations apply an **altitude < 500m filter** to exclude high-altitude 
 **Interactive filter:** Year selector connected to all tabs simultaneously.
 
 ---
+
+### GeoJSON Maps
+
+Two custom GeoJSON maps are configured in Metabase for choropleth visualizations:
+
+| Map | URL | Field |
+|-----|-----|-------|
+| France Régions | https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/regions.geojson | code |
+| France Départements | https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements.geojson | code |
+
+Two SQL views map our data to these regions:
+- `temp_par_region` — average temperature per region (6 regions covered)
+- `temp_par_departement` — average temperature per department (8 departments covered)
 
 ##  Agile Methodology
 
