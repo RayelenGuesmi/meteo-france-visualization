@@ -1,0 +1,43 @@
+======================================================================
+RAPPORT QUALITÉ — Données Météo France
+Généré le : 2026-05-31 17:51:07
+======================================================================
+
+── RÉSUMÉ ──────────────────────────────────────────────────────────
+Lignes initiales        : 8,592,892
+Lignes après nettoyage  : 8,568,738
+Lignes supprimées       : 24,154
+Taux de conservation    : 99.7%
+Période couverte        : 1950-01-01 → 2024-12-31
+Stations météo          : 831
+
+── CORRECTIONS APPLIQUÉES ──────────────────────────────────────────
+  Lignes sans aucune mesure supprimées          : 24,154
+  Doublons supprimés (num_poste + date)         : 0
+  Valeurs aberrantes temp_min → NULL            : 0
+  Valeurs aberrantes temp_max → NULL            : 0
+  Valeurs aberrantes temp_moyenne → NULL        : 0
+  Valeurs aberrantes precipitation → NULL       : 2
+  Valeurs aberrantes vent_moyen → NULL          : 0
+  Incohérences temp_min > temp_max corrigées    : 0
+  Noms de stations standardisés (UPPER + TRIM)  : 8,568,738
+
+── TAUX DE VALEURS MANQUANTES (après nettoyage) ────────────────────
+  temp_moyenne  (TM) : 79.8%
+  temp_max      (TX) : 52.4%
+  temp_min      (TN) : 52.3%
+  precipitation (RR) : 0.8%
+  vent_moyen   (FFM) : 85.9%
+  duree_gel     (DG) : 85.3%
+
+── DISTRIBUTION QUALITÉ ────────────────────────────────────────────
+  partial         : 6,869,381
+  complete        : 1,699,357
+
+── SEUILS DE VALIDATION UTILISÉS ───────────────────────────────────
+  temp_min             : [-40.0, 40.0]
+  temp_max             : [-30.0, 50.0]
+  temp_moyenne         : [-35.0, 45.0]
+  precipitation        : [0.0, 500.0]
+  vent_moyen           : [0.0, 100.0]
+======================================================================

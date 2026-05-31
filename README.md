@@ -193,7 +193,7 @@ The `clean_data.py` script applies the following steps:
 
 ---
 
-## ⚡ Performance Notes
+##  Performance Notes
 
 ### Data Loading & Cleaning Times
 
@@ -221,6 +221,7 @@ To change the chunksize in `clean_data.py`, modify this line:
 ```python
 df.to_sql(..., chunksize=10_000, ...)  # Change to 50_000 for faster loading
 ```
+
 
 ##  Dashboard
 
